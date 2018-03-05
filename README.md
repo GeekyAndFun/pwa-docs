@@ -1,7 +1,7 @@
 # pwa-docs
 ### Various documentation for developing progressive web apps
 
-♥ [Geek Alert - the practice app](https://geekyandfun.github.io/PWA-workshop/) ♥
+🚀 [Live practice app](https://geekyandfun.github.io/PWA-workshop/) 🚀
 
 ------------------------
 
@@ -49,7 +49,7 @@ What would an ideal chat app look like:
   + IndexedDB is async, therefore can be used from both a Worker and Main thread. That's why it's somewhat of a standard for PWA storage
 
 ### How is this all possible?
-+ Most of those app-like functionalities are only available due to a new type of worker: [Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+Most of those app-like functionalities are only available due to a new type of worker: [Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 
 
 How will we use IndexedDB in the context of our chat app?
@@ -61,20 +61,20 @@ How will we use IndexedDB in the context of our chat app?
 
 + why are push notifications rights handled differently than webcam rights ? why wouldn't an icon in the address bar show that the service worker has been disabled and you could enable it, the same as for webcam ?
 
-**Interesting**: Sites sometimes use a "prenotification" for push notif., such as if you disable notification when it's asking the rights, there'll remain a chance to ask again (if there is only the notification, say no once and you'll never get prompt again)
+**Interesting**: 
++ once a user denies the [Notification](https://developer.mozilla.org/en-US/docs/Web/API/notification) permission, it stays "denied" forever. That's why some sites show a "custom notification" dialogue and only if you click "Yes" will they show you the real push notification permission. This way, if you say no you didn't deny the Notification permission but that custom dialog.
 
 + Will `clear history` clear the service worker ? Or do you have to go to `chrome://serviceworker-internals` and `unregister` ?
+  + No, clearing only the history will not clear the service worker.
+  + If you want to clear everything, including unregistering the Service Worker, go to `Dev Tools => Application Tab => Clear Storage => Clear site data` (in Chrome)
 
+### References
++ [**Slides**](http://slides.com/iampava/pwa-workshop#/)
 
 ------------------------
 
 ## Saturday
-+ saturday branch - https://github.com/GeekyAndFun/PWA-workshop/tree/day11
-
-**Interesting**: App.js uses import without webpack by using `type="module"`:
-```html
-<script src="./public/scripts/app.js" type="module"></script>
-```
+Caching static files so that the app works even without connection. End of day branch: https://github.com/GeekyAndFun/PWA-workshop/tree/day11
 
 
 Fetch api example (api from https://github.com/toddmotto/public-apis)
@@ -91,24 +91,12 @@ Fetch api example (api from https://github.com/toddmotto/public-apis)
     //https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 ```
 
-
-**Interesting**: Current browser don't use XHR anymore behind-the-scenes, only fetch (**source ?**).
-
-
-
-**Interesting**: Event interception by `service-worker.js`:
+Intercepting network requests by `service-worker.js`:
 ```javascript
 self.addEventListener('fetch', (event) => {
     console.log('worker intercepted: ', event);
 });
 ```
-
-`Careful !`: Service worker offline tick box from devtools (application tab) doesn't work for sync event.
-
-
-
-**Interesting**: web workers have shared buffers.
-
 
 **caching of static resources, cache versioning** (using cache namespace w counter or timestamp, cache built on install):
 ```json
@@ -122,19 +110,21 @@ self.addEventListener('fetch', (event) => {
 }
 ```
 
-`Careful !`: Access DevTools > Console > Settings wheel > Tick preserve log (in order to have logs for service worker install - it happens before clear console log at F5 refresh)
+⚠ `Careful ` ⚠ 
++ Access DevTools > Console > Settings wheel > Tick preserve log (in order to have logs for service worker install - it happens before clear console log at F5 refresh)
++ Service worker offline tick box from devtools (application tab) doesn't work for sync event.
 
-```javascript
-resp.json().then(jsonResp => {
-    Promise.all(
-        //code
-    ).then(resolve);
-})
+### Interesting
++ we can emulate the `multi-threading` concept in JavaScript by using Workers (Web Workers, Shared Workers or Service Workers)
++ Workers and the script that spawned them can share data (eg: [SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)) 
++ `app.js` uses import without webpack by using `type="module"` | [JavaScript modules](https://jakearchibald.com/2017/es-modules-in-browsers/)
+```html
+<script src="./public/scripts/app.js" type="module"></script>
 ```
-
-
++ modern browsers use Fetch behind the scenes when you do an old-fashioned XHR
 
 ### Reference
++ [Service Worker Cookbook](https://serviceworke.rs/)
 + https://developers.google.com/web/ilt/pwa/caching-files-with-service-worker
 + Use manifest generator - site icon in different sizes - https://app-manifest.firebaseapp.com/ / https://tomitm.github.io/appmanifest/
 
@@ -143,8 +133,7 @@ resp.json().then(jsonResp => {
 
 
 + relationship between web workers and service workers - https://stackoverflow.com/questions/38632723/what-can-service-workers-do-that-web-workers-cannot
-+ animation worker might appear ???
-
++ animation worker might appear [Worklets](https://developer.mozilla.org/en-US/docs/Web/API/Worklet)
 
 ------------------------
 
