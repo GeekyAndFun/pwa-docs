@@ -1,5 +1,5 @@
 # pwa-docs
-### Various documentation for developing progressive web apps
+Various documentation for developing progressive web apps
 
 🚀 [Live practice app](https://geekyandfun.github.io/PWA-workshop/) 🚀
 
@@ -70,6 +70,7 @@ How will we use IndexedDB in the context of our chat app?
 
 ### References
 + [Slides](http://slides.com/iampava/pwa-workshop#/)
++ https://developers.google.com/web/progressive-web-apps/
 
 ------------------------
 
