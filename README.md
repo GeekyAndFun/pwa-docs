@@ -1,10 +1,10 @@
 # pwa-docs
-various documentation for developing progressive web apps
+### Various documentation for developing progressive web apps
 
-
-https://geekyandfun.github.io/PWA-workshop/
+♥ [Geek Alert - the practice app](https://geekyandfun.github.io/PWA-workshop/) ♥
 
 ------------------------
+
 # Workshop notes
 
 ## Friday
@@ -15,26 +15,44 @@ Advantages of an app over web app:
 + UX
 + accesibility
 + works offline
-+ native apps APIs (eg: notifications)
++ access to Native APIs (eg: notifications, NFC, fingerprint sensor)
 + background activity
++ faster (statistically speaking)
 
-What should a chat app have:
-+ be app-like
-+ have camera access
-+ offline notifications
-+ background send
-
+What would an ideal chat app look like:
++ be app-like 
+  + full screen (no browser bar)
+  + home-screen icon 
++ works offline
+  + shows the UI 
+  + shows the latest received messages 
++ blazing fast
++ push notifications upon new messages
++ background send of messages (no further interaction required. It automatically sends them when it finds a connection)
 
 ### Architecture
-
-+ How push notifications work in browsers ?
-  + Every browser has an implementation for this...
-
++ How to make it app-like?
+  + You need to include an [App Manifest](https://developer.mozilla.org/en-US/docs/Web/Manifest)
+  + In order for Chrome to automatically suggest adding it to the homescreen, the app also needs to register a [Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
++ How to make it work offline?
+  + We [cache](https://developer.mozilla.org/en-US/docs/Web/API/Cache) all the UI-needed files (eg: index.html, style.css ...) and then respond with them from the cache instead of network. This way, even when we're offline we can see the UI
+  + We also store the latest messages in [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) and show them on the UI in case of no connection
+  + These 2 strategies make the app boot super fast even on no connection or very slow ones.
++ How do Push Notifications work in browsers ?
+  + Every browser vendor (eg: Chrome, Firefox, Edge ...) has it's own dedicated server handling push notifications
+  + Sending a push notification to a certain device means sending an authorized request to that vendor's server
+  + [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging/) is a great way to test Push Notifications without having to implement/write the underlying request logic
++ How to send the messages in the background?
+  + In case of no connection we store the message in IndexedDB with a **unsent** flag. When the connection returns, we send all the unsent messages from the Service Worker
 + using localStorage vs IndexedDB:
-  + localStorage is synchronous
-  + IndexedDB is async, therefore it's somewhat of a standard for PWA
+  + localStorage is synchronous and accepts only strings for both key & value
+  + IndexedDB is async, therefore can be used from both a Worker and Main thread. That's why it's somewhat of a standard for PWA storage
 
-How will we use IndexedDB ?
+### How is this all possible?
++ Most of those app-like functionalities are only available due to a new type of worker: [Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+
+
+How will we use IndexedDB in the context of our chat app?
 + save unsent messages in this
 
 `DevTools > Application tab > manifest.json`:
