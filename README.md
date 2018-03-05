@@ -69,7 +69,7 @@ How will we use IndexedDB in the context of our chat app?
   + If you want to clear everything, including unregistering the Service Worker, go to `Dev Tools => Application Tab => Clear Storage => Clear site data` (in Chrome)
 
 ### References
-+ [**Slides**](http://slides.com/iampava/pwa-workshop#/)
++ [Slides](http://slides.com/iampava/pwa-workshop#/)
 
 ------------------------
 
@@ -137,8 +137,111 @@ self.addEventListener('fetch', (event) => {
 
 ------------------------
 
-## Sunday
+## Sunday 
+Storing messages in IndexedDB, Push Notifications, Background Sync & App instalation. End of day branch: https://github.com/GeekyAndFun/PWA-workshop/tree/final
 
-...
+### IndexedDB
+
+We use IndexedDB for:
++ storing the received messages so that, upon no-connection to show them
++ storing the unsent messages so that upon connection, we send them
+
+
+
+### [Push](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) Notifications
+
+To receive Push Notifications we first have to ask for permission. A good place to do this is in the SW registration function
+
+```javascript
+Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+        const messaging = firebase.messaging();
+        messaging.useServiceWorker(registration);
+
+        messaging.getToken().then(token => {
+            console.log(token);
+
+            firebase.database()
+                .ref(`tokens/${token}`)
+                .set(true);
+        });
+    }
+});
+```
+
+As you can see, we're using [Firebase](https://firebase.google.com/) to store the secret tokens we need in order to send the Push Notifications.
+
+In the Service Worker we register a `push` listener where we show the notification only if I'm not currently on the page
+
+```javascript
+self.addEventListener('push', function onPush(event) {
+    event.waitUntil(
+        return clients.matchAll({
+            type: 'window'
+        }).then(clientList => {
+            const focusedClients = clientList.filter(client => {
+                return client.focused === true;
+            });
+
+            if (focusedClients.length > 0) {
+                return Promise.resolve(true);
+            }
+            
+            return self.registration.showNotification('Geeky & Fun', {
+                icon: 'https://geekyandfun.github.io/PWA-workshop/public/images/icons/icon-512x512.png',
+                body: `hey there ${Date.now()}`,
+                tag: tag
+            });
+        });
+    )
+});
+```
+
+### Background Sync
+
+When sending a message from offline we register a [sync](https://developer.mozilla.org/en-US/docs/Web/API/ServiceWorkerRegistration/sync) event to our Service Worker
+
+```javascript
+navigator.serviceWorker.ready.then(reg => {
+  reg.sync.register('sendMessage');
+});
+```
+
+In the SW we listen for sync events and when they will get triggered (upon connection), we send the cached messages and then notify the clients that the sync has happened succesfully.
+
+```javascript
+self.addEventListener('sync', function onSync(event) {
+    switch (event.tag) {
+        case 'sendMessage':
+            self.sendCachedMessages().then(() => {
+
+                clients.matchAll({
+                    type: 'window'
+                }).then(clientList => {
+                    clientList.forEach(client => {
+                        client.postMessage('BACKGROUND_SYNC');
+                    })
+                });
+
+            });
+            break;
+        default:
+            break;
+    }
+});
+```
+
+### App Instalation
+
+To enable a correct instalation of the website on the home-screen, add a [manifest.json](https://github.com/GeekyAndFun/PWA-workshop/blob/final/manifest.json) file and link to it in `index.html`
+
+```html
+<link rel="manifest" href="manifest.json">
+```
+Now an install banner should appear on Chrome. If not: `Menu => Add to homescreen => Check homescreen`
+
+
+### Reference
++ [Slides](http://slides.com/stefanhagiu/indexeddb#/)
 
 ------------------------
